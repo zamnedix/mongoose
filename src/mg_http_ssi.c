@@ -28,8 +28,13 @@ static void mg_do_ssi_include(struct mg_connection *nc, struct http_message *hm,
    * of size MG_BUF_LEN to get the tag. So strlen(tag) is always < MG_BUF_LEN.
    */
   if (sscanf(tag, " virtual=\"%[^\"]\"", file_name) == 1) {
-    /* File name is relative to the webserver root */
-    snprintf(path, sizeof(path), "%s/%s", opts->document_root, file_name);
+	  /* File name is relative to the webserver root */
+	  ret = snprintf(path, sizeof(path), "%s/%s", opts->document_root,
+			 file_name);
+	  if (ret >= sizeof(path)) {
+		  mg_printf(nc, "Path too long: truncated to %s", path);
+		  return;
+	  }
   } else if (sscanf(tag, " abspath=\"%[^\"]\"", file_name) == 1) {
     /*
      * File name is relative to the webserver working directory
